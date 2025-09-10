@@ -335,6 +335,11 @@ impl Processor {
                     }
                 }
             }
+            // If there are session limits, but there is no delegate, it means
+            // that the session has used up all its limits for this token
+            (COption::None, Some(_)) => {
+                return Err(SessionError::LimitsExceeded.into());
+            }
             // The signer is the owner of the account
             _ => Self::validate_owner_or_global_setter(
                 program_id,
