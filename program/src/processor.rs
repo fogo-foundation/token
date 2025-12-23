@@ -4,28 +4,25 @@ use {
     crate::{
         amount_to_ui_amount_string_trimmed,
         error::TokenError,
-        instruction::{is_valid_signer_index, AuthorityType, TokenInstruction, MAX_SIGNERS},
+        instruction::{AuthorityType, MAX_SIGNERS, TokenInstruction, is_valid_signer_index},
         state::{Account, AccountState, Mint, Multisig},
         try_ui_amount_into_amount,
     },
     fogo_sessions_sdk::{
-        error::SessionError,
-        session::{token_program::SESSION_SETTER, AuthorizedTokens, Session, SESSION_MANAGER_ID},
+        error::SessionError, intent_transfer::INTENT_TRANSFER_SETTER, session::{AuthorizedTokens, SESSION_MANAGER_ID, Session, token_program::SESSION_SETTER}
     },
-    solana_account_info::{next_account_info, AccountInfo},
+    solana_account_info::{AccountInfo, next_account_info},
     solana_cpi::set_return_data,
     solana_msg::msg,
     solana_program_error::{ProgramError, ProgramResult},
     solana_program_memory::sol_memcmp,
     solana_program_option::COption,
     solana_program_pack::{IsInitialized, Pack},
-    solana_pubkey::{pubkey, Pubkey, PUBKEY_BYTES},
+    solana_pubkey::{PUBKEY_BYTES, Pubkey},
     solana_rent::Rent,
     solana_sdk_ids::system_program,
     solana_sysvar::Sysvar,
 };
-
-const INTENT_TRANSFER_SETTER: Pubkey = pubkey!("EkYeW6iAtp2XsxsFZ2pDryf54qSND4RkGFCgMmX55vBL");
 
 /// Program state handler.
 pub struct Processor {}
