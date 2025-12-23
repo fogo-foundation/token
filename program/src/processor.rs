@@ -4,21 +4,23 @@ use {
     crate::{
         amount_to_ui_amount_string_trimmed,
         error::TokenError,
-        instruction::{AuthorityType, MAX_SIGNERS, TokenInstruction, is_valid_signer_index},
+        instruction::{is_valid_signer_index, AuthorityType, TokenInstruction, MAX_SIGNERS},
         state::{Account, AccountState, Mint, Multisig},
         try_ui_amount_into_amount,
     },
     fogo_sessions_sdk::{
-        error::SessionError, intent_transfer::INTENT_TRANSFER_SETTER, session::{AuthorizedTokens, SESSION_MANAGER_ID, Session, token_program::SESSION_SETTER}
+        error::SessionError,
+        intent_transfer::INTENT_TRANSFER_SETTER,
+        session::{token_program::SESSION_SETTER, AuthorizedTokens, Session, SESSION_MANAGER_ID},
     },
-    solana_account_info::{AccountInfo, next_account_info},
+    solana_account_info::{next_account_info, AccountInfo},
     solana_cpi::set_return_data,
     solana_msg::msg,
     solana_program_error::{ProgramError, ProgramResult},
     solana_program_memory::sol_memcmp,
     solana_program_option::COption,
     solana_program_pack::{IsInitialized, Pack},
-    solana_pubkey::{PUBKEY_BYTES, Pubkey},
+    solana_pubkey::{Pubkey, PUBKEY_BYTES},
     solana_rent::Rent,
     solana_sdk_ids::system_program,
     solana_sysvar::Sysvar,
@@ -772,12 +774,27 @@ impl Processor {
             .close_authority
             .unwrap_or(source_account.owner);
         if !source_account.is_owned_by_system_program_or_incinerator() {
-            Self::validate_owner(
-                program_id,
-                &authority,
-                authority_info,
-                account_info_iter.as_slice(),
-            )?;
+            if Self::cmp_pubkeys(&SESSION_MANAGER_ID, authority_info.owner) {
+                let session_account =
+                    Session::try_deserialize(&mut authority_info.data.borrow().as_ref())?;
+                session_account.check_can_close_token_account(
+                    &source_account.owner,
+                    destination_account_info,
+                )?;
+                Self::validate_owner(
+                    program_id,
+                    &authority_info.key,
+                    authority_info,
+                    account_info_iter.as_slice(),
+                )?;
+            } else {
+                Self::validate_owner(
+                    program_id,
+                    &authority,
+                    authority_info,
+                    account_info_iter.as_slice(),
+                )?;
+            }
         } else if !solana_sdk_ids::incinerator::check_id(destination_account_info.key) {
             return Err(ProgramError::InvalidAccountData);
         }

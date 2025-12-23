@@ -1377,8 +1377,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 [[package]]
 name = "fogo-sessions-sdk"
 version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc77ac22e902ca803919161aaf302ffe2bc96420c7c84832f0e2e09db5b1ae34"
+source = "git+https://github.com/fogo-foundation/fogo-sessions.git?branch=feat%2Ftoken-support-for-closing-accounts#43cf5b7d7a2f755f8435b2a17deea193bbec6a34"
 dependencies = [
  "borsh 0.10.4",
  "solana-program",
