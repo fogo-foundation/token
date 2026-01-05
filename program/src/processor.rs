@@ -10,6 +10,7 @@ use {
     },
     fogo_sessions_sdk::{
         error::SessionError,
+        intent_transfer::INTENT_TRANSFER_SETTER,
         session::{token_program::SESSION_SETTER, AuthorizedTokens, Session, SESSION_MANAGER_ID},
     },
     solana_account_info::{next_account_info, AccountInfo},
@@ -19,13 +20,11 @@ use {
     solana_program_memory::sol_memcmp,
     solana_program_option::COption,
     solana_program_pack::{IsInitialized, Pack},
-    solana_pubkey::{pubkey, Pubkey, PUBKEY_BYTES},
+    solana_pubkey::{Pubkey, PUBKEY_BYTES},
     solana_rent::Rent,
     solana_sdk_ids::system_program,
     solana_sysvar::Sysvar,
 };
-
-const INTENT_TRANSFER_SETTER: Pubkey = pubkey!("EkYeW6iAtp2XsxsFZ2pDryf54qSND4RkGFCgMmX55vBL");
 
 /// Program state handler.
 pub struct Processor {}
@@ -775,12 +774,29 @@ impl Processor {
             .close_authority
             .unwrap_or(source_account.owner);
         if !source_account.is_owned_by_system_program_or_incinerator() {
-            Self::validate_owner(
-                program_id,
-                &authority,
-                authority_info,
-                account_info_iter.as_slice(),
-            )?;
+            if Self::cmp_pubkeys(&SESSION_MANAGER_ID, authority_info.owner) {
+                let user = Session::try_deserialize(&mut authority_info.data.borrow().as_ref())?
+                    .get_user_checked_token_program()?;
+                if user != authority {
+                    return Err(SessionError::UserMismatch.into());
+                }
+                if user != *destination_account_info.key {
+                    return Err(SessionError::TokenCloseAccountWrongDestination.into());
+                }
+                Self::validate_owner(
+                    program_id,
+                    authority_info.key,
+                    authority_info,
+                    account_info_iter.as_slice(),
+                )?;
+            } else {
+                Self::validate_owner(
+                    program_id,
+                    &authority,
+                    authority_info,
+                    account_info_iter.as_slice(),
+                )?;
+            }
         } else if !solana_sdk_ids::incinerator::check_id(destination_account_info.key) {
             return Err(ProgramError::InvalidAccountData);
         }
