@@ -781,7 +781,7 @@ impl Processor {
                 if user != authority {
                     return Err(SessionError::UserMismatch.into());
                 }
-                if destination_account_info.key != &user {
+                if user != *destination_account_info.key {
                     return Err(SessionError::TokenCloseAccountWrongDestination.into());
                 }
                 Self::validate_owner(
