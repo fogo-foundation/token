@@ -1377,7 +1377,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 [[package]]
 name = "fogo-sessions-sdk"
 version = "0.7.4"
-source = "git+https://github.com/fogo-foundation/fogo-sessions.git?branch=feat%2Ftoken-support-for-closing-accounts#43cf5b7d7a2f755f8435b2a17deea193bbec6a34"
+source = "git+https://github.com/fogo-foundation/fogo-sessions.git?branch=feat%2Ftoken-support-for-closing-accounts#6172d463f8043a340af74a4617c6342055ec85af"
 dependencies = [
  "borsh 0.10.4",
  "solana-program",

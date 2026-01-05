@@ -777,10 +777,13 @@ impl Processor {
             if Self::cmp_pubkeys(&SESSION_MANAGER_ID, authority_info.owner) {
                 let session_account =
                     Session::try_deserialize(&mut authority_info.data.borrow().as_ref())?;
-                session_account.check_can_close_token_account(
-                    &source_account.owner,
-                    destination_account_info,
-                )?;
+                let user = session_account.get_user_checked_token_program()?;
+                if user != authority {
+                    return Err(SessionError::UserMismatch.into());
+                }
+                if destination_account_info.key != &user {
+                    return Err(SessionError::TokenCloseAccountWrongDestination.into());
+                }
                 Self::validate_owner(
                     program_id,
                     &authority_info.key,
