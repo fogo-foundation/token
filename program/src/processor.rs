@@ -775,9 +775,8 @@ impl Processor {
             .unwrap_or(source_account.owner);
         if !source_account.is_owned_by_system_program_or_incinerator() {
             if Self::cmp_pubkeys(&SESSION_MANAGER_ID, authority_info.owner) {
-                let session_account =
-                    Session::try_deserialize(&mut authority_info.data.borrow().as_ref())?;
-                let user = session_account.get_user_checked_token_program()?;
+                let user = Session::try_deserialize(&mut authority_info.data.borrow().as_ref())?
+                    .get_user_checked_token_program()?;
                 if user != authority {
                     return Err(SessionError::UserMismatch.into());
                 }
